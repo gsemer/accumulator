@@ -6,11 +6,13 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/redis/go-redis/v9"
 )
 
 type Config struct {
-	State      *domain.State
-	WorkerPool *infrastructure.WorkerPool
+	State       *domain.State
+	WorkerPool  *infrastructure.WorkerPool
+	RedisClient *redis.Client
 }
 
 // Adds the routes to the application
