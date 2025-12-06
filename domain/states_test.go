@@ -17,16 +17,18 @@ func TestAdd(t *testing.T) {
 		state.Add(value)
 	}
 
-	wg.Add(2)
+	n := 100
 
-	go worker(1)
-	go worker(1)
+	for i := 1; i <= n; i++ {
+		wg.Add(1)
+		go worker(int64(i))
+	}
 
 	close(start)
 
 	wg.Wait()
 
-	if state.accumulator != 2 {
-		t.Errorf("expected 2, got %v", state.accumulator)
+	if state.accumulator != int64(n*(n+1)/2) {
+		t.Errorf("expected %v, got %v", int64(n*(n+1)/2), state.accumulator)
 	}
 }
