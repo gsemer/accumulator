@@ -25,7 +25,7 @@ type AddJob struct {
 func (j *AddJob) Process() error {
 	j.State.Add(j.Value)
 
-	err := j.RedisClient.Set(context.Background(), string(accumulator), j.Value, 0).Err()
+	err := j.RedisClient.Set(context.Background(), string(accumulator), j.State.accumulator, 0).Err()
 	if err != nil {
 		return err
 	}
