@@ -4,6 +4,7 @@ import (
 	"block/domain"
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 type AddRequest struct {
@@ -39,22 +40,14 @@ func (app *Config) AddHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
-type GetRequest struct {
-	Format string `json:"format"`
-}
-
 type GetResponse struct {
 	Res any `json:"res"`
 }
 
 func (app *Config) GetHandler(w http.ResponseWriter, r *http.Request) {
-	var getRequest GetRequest
-	if err := json.NewDecoder(r.Body).Decode(&getRequest); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	format := r.URL.Query().Get("format")
 
-	result, err := app.State.Get(getRequest.Format)
+	result, err := app.State.Get(format)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -70,22 +63,16 @@ func (app *Config) GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
-type TargetRequest struct {
-	Target int64 `json:"target"`
-}
-
 type TargetResponse struct {
 	Res []int64 `json:"res"`
 }
 
 func (app *Config) TargetHandler(w http.ResponseWriter, r *http.Request) {
-	var targetRequest TargetRequest
-	if err := json.NewDecoder(r.Body).Decode(&targetRequest); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	target := r.URL.Query().Get("target")
 
-	result := app.State.Find(targetRequest.Target)
+	targetToInt, _ := strconv.Atoi(target)
+
+	result := app.State.Find(int64(targetToInt))
 
 	bytes, err := json.Marshal(TargetResponse{Res: result})
 	if err != nil {
