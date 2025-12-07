@@ -1,8 +1,8 @@
 package application
 
 import (
-	"block/domain"
-	"block/infrastructure"
+	"accumulator/domain"
+	"accumulator/infrastructure"
 	"net/http"
 
 	"github.com/gorilla/mux"

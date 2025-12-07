@@ -1,9 +1,9 @@
 package main
 
 import (
-	"block/application"
-	"block/domain"
-	"block/infrastructure"
+	"accumulator/application"
+	"accumulator/domain"
+	"accumulator/infrastructure"
 	"context"
 	"fmt"
 	"log"

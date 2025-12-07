@@ -1,4 +1,4 @@
-module block
+module accumulator
 
 go 1.23.1
 

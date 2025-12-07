@@ -1,7 +1,7 @@
 package infrastructure
 
 import (
-	"block/domain"
+	"accumulator/domain"
 	"log"
 	"sync"
 )

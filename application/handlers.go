@@ -1,7 +1,7 @@
 package application
 
 import (
-	"block/domain"
+	"accumulator/domain"
 	"encoding/json"
 	"net/http"
 	"strconv"
