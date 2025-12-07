@@ -23,9 +23,8 @@ func (app *Config) AddHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	job := &domain.AddJob{
-		State:       app.State,
-		Value:       addRequest.Value,
-		RedisClient: app.RedisClient,
+		State: app.State,
+		Value: addRequest.Value,
 	}
 
 	app.WorkerPool.Submit(job)
