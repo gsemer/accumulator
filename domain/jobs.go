@@ -10,6 +10,6 @@ type AddJob struct {
 }
 
 func (j *AddJob) Process() error {
-	j.State.Add(j.Value)
-	return nil
+	err := j.State.Add(j.Value)
+	return err
 }

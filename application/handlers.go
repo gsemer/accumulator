@@ -71,7 +71,11 @@ func (app *Config) TargetHandler(w http.ResponseWriter, r *http.Request) {
 
 	targetToInt, _ := strconv.Atoi(target)
 
-	result := app.State.Find(int64(targetToInt))
+	result, err := app.State.Find(int64(targetToInt))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	bytes, err := json.Marshal(TargetResponse{Res: result})
 	if err != nil {
