@@ -1,10 +1,12 @@
 package domain
 
 import (
+	"context"
 	"errors"
-	"log"
-	"sync"
+	"strconv"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -12,48 +14,42 @@ var (
 )
 
 type State struct {
-	mutex       sync.Mutex
-	accumulator int64
-	values      []int64
+	accumulator, values string
+	rdb                 *redis.Client
 }
 
-func NewState() *State {
+func NewState(accumulator, values string, rdb *redis.Client) *State {
 	return &State{
-		accumulator: 0,
-		values:      make([]int64, 0),
+		accumulator: accumulator,
+		values:      values,
+		rdb:         rdb,
 	}
 }
 
 // Increment accumulator by value and append it to stored values
-func (state *State) Add(value int64) {
+func (state *State) Add(value int64) error {
 	// This delay simulates a heavy operation
-	// It should happen before locking, because that way other goroutines are not blocked waiting for the mutex
 	time.Sleep(1 * time.Second)
 
-	// Prevent race conditions by synchronizing access to shared data
-	state.mutex.Lock()
-	defer state.mutex.Unlock()
+	pipe := state.rdb.TxPipeline()
 
-	state.accumulator += value
-	state.values = append(state.values, value)
-	log.Println("Accumulator:", state.accumulator)
+	pipe.IncrBy(context.Background(), state.accumulator, value)
+	pipe.RPush(context.Background(), state.values, value)
+
+	pipe.Expire(context.Background(), state.accumulator, 7*24*time.Hour)
+	pipe.Expire(context.Background(), state.values, 7*24*time.Hour)
+
+	_, err := pipe.Exec(context.Background())
+	return err
 }
 
 // Get the current state of accumulator and values list
 func (state *State) Get(format string) (any, error) {
-	state.mutex.Lock()
-
-	accumulator := state.accumulator
-	copiedValues := make([]int64, len(state.values))
-	copy(copiedValues, state.values)
-
-	state.mutex.Unlock()
-
 	switch format {
 	case "sum":
-		return accumulator, nil
+		return state.rdb.Get(context.Background(), "accumulator").Int64()
 	case "list":
-		return copiedValues, nil
+		return state.rdb.LRange(context.Background(), "values", 0, -1).Result()
 	default:
 		return nil, ErrInvalidFormat
 	}
@@ -62,26 +58,25 @@ func (state *State) Get(format string) (any, error) {
 // Find two numbers in values list that sum up to target
 // Time complexity: O(n)
 // Space complexity: O(n)
-func (state *State) Find(target int64) []int64 {
-	// Prevent from blocking other goroutines to access shared data
-	state.mutex.Lock()
-
-	copiedValues := make([]int64, len(state.values))
-	copy(copiedValues, state.values)
-
-	state.mutex.Unlock()
+func (state *State) Find(target int64) ([]int64, error) {
+	values, err := state.rdb.LRange(context.Background(), "values", 0, -1).Result()
+	if err != nil {
+		return nil, err
+	}
 
 	hashMap := map[int64]int{}
 
-	for i, value := range copiedValues {
-		difference := target - value
+	for i, value := range values {
+		v, _ := strconv.Atoi(value)
+
+		difference := target - int64(v)
 
 		if _, ok := hashMap[difference]; ok {
-			return []int64{value, difference}
+			return []int64{int64(v), difference}, nil
 		}
 
-		hashMap[value] = i
+		hashMap[int64(v)] = i
 	}
 
-	return []int64{}
+	return []int64{}, nil
 }

@@ -13,9 +13,17 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "",
+		DB:       0,
+	})
+
 	workers := 50 * runtime.NumCPU()
 	bufferSize := 10 * workers
 	wg := sync.WaitGroup{}
@@ -23,7 +31,7 @@ func main() {
 	wp.Start()
 
 	app := application.Config{
-		State:      domain.NewState(),
+		State:      domain.NewState("accumulator", "values", rdb),
 		WorkerPool: wp,
 	}
 
