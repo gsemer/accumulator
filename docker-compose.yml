@@ -1,0 +1,37 @@
+version: '3'
+
+networks:
+  appnet:
+
+services:
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - appnet
+
+  accumulator:
+    image: accumulator
+    depends_on:
+      - redis
+    deploy:
+      mode: replicated
+      replicas: 3
+      restart_policy:
+        condition: any
+    ports:
+      - "8000:8000"
+    networks:
+      - appnet
+
+volumes:
+  redis-data:
