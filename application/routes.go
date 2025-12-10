@@ -11,13 +11,14 @@ import (
 type Config struct {
 	State      *domain.State
 	WorkerPool *infrastructure.WorkerPool
+	Limiter    *RateLimiter
 }
 
 // Adds the routes to the application
 func (app *Config) Routes() http.Handler {
 	mux := mux.NewRouter()
 
-	mux.HandleFunc("/add", app.AddHandler).Methods("POST")
+	mux.Handle("/add", app.Limiter.RateLimitMiddleware(http.HandlerFunc(app.AddHandler)))
 	mux.HandleFunc("/state", app.GetHandler).Methods("GET")
 	mux.HandleFunc("/tsp", app.TargetHandler).Methods("GET")
 
