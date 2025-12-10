@@ -25,10 +25,11 @@ func main() {
 	app := application.Config{
 		State:      domain.NewState(),
 		WorkerPool: wp,
+		Limiter:    application.NewRateLimiter(10000, time.Minute),
 	}
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", "8000"),
+		Addr:    fmt.Sprintf(":%s", "8001"),
 		Handler: app.Routes(),
 	}
 	// Run the server in a goroutine so that it doesn't block
