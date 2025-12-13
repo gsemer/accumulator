@@ -19,7 +19,7 @@ Behavior:
 - Actual update is performed asynchronously after a 1-second delay, simulating heavy operation.
 - Background work is handled via a worker pool.
 
-This asynchronous design enabled processing 10,000 requests in ~25 seconds without scaling, and ~8 seconds with scaling.
+This asynchronous design enabled processing 10,000 requests in ~25 seconds without scaling, and ~2 seconds with scaling.
 
 - `GET /state`
 
