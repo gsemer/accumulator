@@ -62,6 +62,11 @@ This architecture enables:
 - Consistent state across multiple instances
 - Significant throughput improvements
 
+`Signals`
+
+This service, that acts as a sidecar for the main one, handles background jobs. 
+- Every minute checks whether the sum of the values is equal to accumulator or not.
+
 `Mermaid diagram`
 
 The following diagram illustrates the process.
