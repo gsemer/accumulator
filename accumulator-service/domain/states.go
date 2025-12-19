@@ -45,11 +45,36 @@ func (state *State) Add(value int64) error {
 
 // Get the current state of accumulator and values list
 func (state *State) Get(format string) (any, error) {
+	accumulator, err := state.rdb.Get(context.Background(), "accumulator").Int64()
+	if err != nil {
+		return nil, err
+	}
+
+	valuesStr, err := state.rdb.LRange(context.Background(), "values", 0, -1).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]int64, len(valuesStr))
+	for i, v := range valuesStr {
+		num, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = num
+	}
+
 	switch format {
 	case "sum":
-		return state.rdb.Get(context.Background(), "accumulator").Int64()
+		return accumulator, nil
 	case "list":
-		return state.rdb.LRange(context.Background(), "values", 0, -1).Result()
+		return values, nil
+	case "both":
+		type StateResult struct {
+			Accumulator int64   `json:"accumulator"`
+			Values      []int64 `json:"values"`
+		}
+		return StateResult{accumulator, values}, nil
 	default:
 		return nil, ErrInvalidFormat
 	}
