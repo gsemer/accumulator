@@ -33,5 +33,15 @@ services:
     networks:
       - appnet
 
+  signal:
+    image: signal
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - appnet
+
 volumes:
   redis-data:
