@@ -13,13 +13,13 @@ import (
 )
 
 func main() {
-	accumulatorAPI := "http://localhost:8000"
+	accumulatorAPI := "http://accumulator:8000"
 
 	repository := persistence.NewBackgroundRepository(http.Client{}, accumulatorAPI)
 	service := application.NewBackgroundService(repository)
 
 	c := cron.New(cron.WithSeconds())
-	c.AddFunc("0 * * * * *", func() {
+	c.AddFunc("0 0 7 * * *", func() {
 		log.Println("Crontab job triggered.")
 
 		_, err := service.Run()

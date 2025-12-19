@@ -14,33 +14,31 @@ func NewBackgroundService(br domain.BackgroundRepository) *BackgroundService {
 	return &BackgroundService{br: br}
 }
 
-func (bs *BackgroundService) FetchData() (int64, []int64, error) {
-	accumulator, err := bs.br.FetchAccumulator()
+func (bs *BackgroundService) FetchData() (domain.State, error) {
+	state, err := bs.br.FetchData()
 	if err != nil {
-		return 0, nil, err
+		return domain.State{}, err
 	}
 
-	values, err := bs.br.FetchValues()
-	if err != nil {
-		return 0, nil, err
-	}
-
-	return accumulator, values, nil
+	return state, nil
 }
 
 func (bs *BackgroundService) Run() (bool, error) {
-	accumulator, values, err := bs.FetchData()
+	state, err := bs.FetchData()
 	if err != nil {
 		return false, err
 	}
 
 	var sum int64
-	for _, value := range values {
+	for _, value := range state.Values {
 		sum += value
 	}
 
-	if accumulator != sum {
-		log.Printf("expected %v, got %v", accumulator, sum)
+	log.Printf("Accumulator: %d", state.Accumulator)
+	log.Printf("Sum: %d", sum)
+
+	if state.Accumulator != sum {
+		log.Printf("expected %v, got %v", state.Accumulator, sum)
 		return false, errors.New("the sum of the values is not equal to the accumulator")
 	}
 	log.Println("the sum of the values is equal to the accumulator as expected")
