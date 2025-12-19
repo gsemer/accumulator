@@ -54,6 +54,12 @@ func (state *State) Get(format string) (any, error) {
 		return accumulator, nil
 	case "list":
 		return copiedValues, nil
+	case "both":
+		type StateResult struct {
+			Accumulator int64   `json:"accumulator"`
+			Values      []int64 `json:"values"`
+		}
+		return StateResult{accumulator, copiedValues}, nil
 	default:
 		return nil, ErrInvalidFormat
 	}
