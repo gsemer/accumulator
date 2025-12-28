@@ -46,7 +46,9 @@ func (state *State) Add(value int64) error {
 // Get the current state of accumulator and values list
 func (state *State) Get(format string) (any, error) {
 	accumulator, err := state.rdb.Get(context.Background(), "accumulator").Int64()
-	if err != nil {
+	if err == redis.Nil {
+		accumulator = 0
+	} else if err != nil {
 		return nil, err
 	}
 
